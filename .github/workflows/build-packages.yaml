@@ -57,6 +57,8 @@ jobs:
 
     - name: Publish to GitHub Packages
       run: |
-        choco push ./dist/scrutiny.*.nupkg --source https://nuget.pkg.github.com/LostOnTheLine/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
-        choco push ./dist/explorerpatcher.*.nupkg --source https://nuget.pkg.github.com/LostOnTheLine/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+        $nupkgs = Get-ChildItem -Path ./dist -Filter *.nupkg
+        foreach ($nupkg in $nupkgs) {
+          choco push $nupkg.FullName --source https://nuget.pkg.github.com/LostOnTheLine/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+        }
       shell: pwsh
