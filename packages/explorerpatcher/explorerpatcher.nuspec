@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>explorerpatcher</id>
+    <version>22621.4317.67.1</version>
+    <title>ExplorerPatcher</title>
+    <authors>valinet</authors>
+    <projectUrl>https://github.com/valinet/ExplorerPatcher</projectUrl>
+    <packageSourceUrl>https://github.com/yourusername/choco-packages</packageSourceUrl>
+    <summary>Enhances Windows with Windows 10 features</summary>
+    <description>Restores Windows 10 taskbar, Start menu, and more.</description>
+    <tags>explorerpatcher windows taskbar</tags>
+  </metadata>
+</package>

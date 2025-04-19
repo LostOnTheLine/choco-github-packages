@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>scrutiny</id>
+    <version>0.0.0</version> <!-- Placeholder; actual version set by choco pack -->
+    <title>Scrutiny Collector</title>
+    <authors>AnalogJ</authors>
+    <projectUrl>https://github.com/AnalogJ/scrutiny</projectUrl>
+    <packageSourceUrl>https://github.com/yourusername/choco-packages</packageSourceUrl>
+    <summary>SMART metrics collector for hard drives</summary>
+    <description>Collects and reports SMART metrics to Scrutiny dashboard.</description>
+    <tags>scrutiny smart monitoring</tags>
+  </metadata>
+</package>
