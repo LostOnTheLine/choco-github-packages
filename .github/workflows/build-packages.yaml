@@ -1,9 +1,9 @@
 name: Build Chocolatey Packages
 
 on:
- # push:
- #   branches:
- #     - main
+#  push:
+#    branches:
+#      - main
   workflow_dispatch:
 
 jobs:
@@ -13,12 +13,28 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Needed for versioning
+
+    - name: Read and Increment Version
+      id: version
+      run: |
+        $version = Get-Content VERSION
+        $parts = $version.Split('.')
+        $patch = [int]$parts[2] + 1
+        $newVersion = "$($parts[0]).$($parts[1]).$patch"
+        Set-Content VERSION $newVersion
+        echo "version=$newVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+      shell: pwsh
 
     - name: Install Chocolatey
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        if (-not (Test-Path "C:\ProgramData\Chocolatey")) {
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        }
+      shell: pwsh
 
     - name: Build Scrutiny Package
       run: |
@@ -30,11 +46,20 @@ jobs:
         choco pack ./packages/explorerpatcher/explorerpatcher.nuspec --outputdirectory ./dist
       shell: pwsh
 
+    - name: Commit Updated VERSION
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+        git add VERSION
+        git commit -m "Bump version to ${{ steps.version.outputs.version }}"
+        git push
+      shell: bash
+
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v1.0
-        name: Chocolatey Packages v1.0
+        tag_name: v${{ steps.version.outputs.version }}
+        name: Chocolatey Packages v${{ steps.version.outputs.version }}
         body: Auto-generated release with Scrutiny and ExplorerPatcher packages.
         files: |
           dist/scrutiny.*.nupkg
