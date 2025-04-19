@@ -1,0 +1,43 @@
+name: Build Chocolatey Packages
+
+on:
+ # push:
+ #   branches:
+ #     - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install Chocolatey
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+    - name: Build Scrutiny Package
+      run: |
+        choco pack ./packages/scrutiny/scrutiny.nuspec --outputdirectory ./dist
+      shell: pwsh
+
+    - name: Build ExplorerPatcher Package
+      run: |
+        choco pack ./packages/explorerpatcher/explorerpatcher.nuspec --outputdirectory ./dist
+      shell: pwsh
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v1.0
+        name: Chocolatey Packages v1.0
+        body: Auto-generated release with Scrutiny and ExplorerPatcher packages.
+        files: |
+          dist/scrutiny.*.nupkg
+          dist/explorerpatcher.*.nupkg
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
