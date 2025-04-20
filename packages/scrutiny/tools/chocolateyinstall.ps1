@@ -1,26 +1,36 @@
 $ErrorActionPreference = 'Stop'
+
 $packageName = 'scrutiny'
+$toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
+$installDir = 'C:\opt\scrutiny'
 
-# Fetch latest release
-$releases = Invoke-RestMethod -Uri 'https://api.github.com/repos/AnalogJ/scrutiny/releases/latest'
-$version = $releases.tag_name -replace '^v', ''
-$arch = if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq 'Arm64') { 'arm64' } else { 'amd64' }
-$asset = $releases.assets | Where-Object { $_.name -eq "scrutiny-collector-metrics-windows-$arch.exe" } | Select-Object -First 1
-$url = $asset.browser_download_url
-$checksum = (Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing | Select-Object -ExpandProperty Headers.'Content-MD5').ToUpper()
-$checksumType = 'md5'
+$pp = Get-PackageParameters
+if ($pp['InstallDir']) { $installDir = $pp['InstallDir'] }
 
-# Parse install directory
-$packageParameters = $env:ChocolateyPackageParameters
-$installDir = if ($packageParameters -match '/InstallDir:(\S+)') { $matches[1] } else { 'C:\opt\scrutiny' }
+$url64 = 'https://github.com/AnalogJ/scrutiny/releases/latest/download/scrutiny-collector-windows-amd64.exe'
+$urlArm64 = 'https://github.com/AnalogJ/scrutiny/releases/latest/download/scrutiny-collector-windows-arm64.exe'
+
+$cpuInfo = Get-WmiObject -Class Win32_Processor
+$arch = if ($cpuInfo.Architecture -eq 12) { 'arm64' } else { 'amd64' }
+$url = if ($arch -eq 'arm64') { $urlArm64 } else { $url64 }
+
+$checksum64 = '' # Add checksum if available
+$checksumArm64 = '' # Add checksum if available
+$checksum = if ($arch -eq 'arm64') { $checksumArm64 } else { $checksum64 }
 
 $packageArgs = @{
-    packageName   = $packageName
-    url           = $url
-    checksum      = $checksum
-    checksumType  = $checksumType
-    fileFullPath  = "$installDir\$($asset.name)"
+  packageName   = $packageName
+  fileType      = 'exe'
+  url           = $url
+  softwareName  = 'Scrutiny Collector*'
+  checksum      = $checksum
+  checksumType  = 'sha256'
+  silentArgs    = ''
+  validExitCodes= @(0)
 }
 
 New-Item -ItemType Directory -Path $installDir -Force
-Get-ChocolateyWebFile @packageArgs
+Install-ChocolateyPackage @packageArgs
+
+$exePath = Join-Path $installDir 'scrutiny-collector.exe'
+Move-Item -Path (Join-Path $toolsDir 'scrutiny-collector-windows-*.exe') -Destination $exePath -Force

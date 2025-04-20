@@ -6,9 +6,11 @@
     <title>ExplorerPatcher</title>
     <authors>valinet</authors>
     <projectUrl>https://github.com/valinet/ExplorerPatcher</projectUrl>
-    <packageSourceUrl>https://github.com/yourusername/choco-packages</packageSourceUrl>
-    <summary>Enhances Windows with Windows 10 features</summary>
-    <description>Restores Windows 10 taskbar, Start menu, and more.</description>
-    <tags>explorerpatcher windows taskbar</tags>
+    <packageSourceUrl>https://github.com/LostOnTheLine/choco-github-packages</packageSourceUrl>
+    <summary>Enhances Windows with Windows 10-like taskbar and Start menu</summary>
+    <description>Customizes Windows Explorer with advanced features.</description>
+    <tags>explorerpatcher windows customization</tags>
+    <licenseUrl>https://www.gnu.org/licenses/old-licenses/gpl-2.0.html</licenseUrl>
+    <copyright>Copyright (c) valinet and contributors</copyright>
   </metadata>
 </package>
