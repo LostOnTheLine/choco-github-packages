@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xml:base="https://raw.githubusercontent.com/LostOnTheLine/choco-github-packages/main/packages/feed" xmlns="http://www.w3.org/2005/Atom">
+  <title>LostOnTheLine Chocolatey Packages</title>
+  <id>https://raw.githubusercontent.com/LostOnTheLine/choco-github-packages/main/packages/feed</id>
+  <updated>2025-04-20T21:41:58.8154714+00:00</updated>
+  <link rel="self" href="https://raw.githubusercontent.com/LostOnTheLine/choco-github-packages/main/packages/feed" />
+  <entry>
+    <id>explorerpatcher.22621.4317.67.1</id>
+    <title>explorerpatcher</title>
+    <updated>{0}</updated>
+    <content type="application/zip" src="explorerpatcher.22621.4317.67.1.nupkg" />
+  </entry><entry>
+    <id>scrutiny.0.0.0</id>
+    <title>scrutiny</title>
+    <updated>{0}</updated>
+    <content type="application/zip" src="scrutiny.0.0.0.nupkg" />
+  </entry>
+</feed>
