@@ -25,7 +25,7 @@ A custom Chocolatey source for GitHub apps not available in the official Chocola
 
 1. **Add the Repository**:
     ```powershell
-    choco source add -n=ChocoGitHub -s="https://github.com/LostOnTheLine/choco-github-packages/releases/download/v1.0" --priority=232
+    choco source add -n=ChocoGitHub -s="https://raw.githubusercontent.com/LostOnTheLine/choco-github-packages/main/packages/feed" --priority=232
     ```
     - This installs the `Source` as `ChocoGitHub` with a low priority. This means that any sources like the default Chocolatey source will be checked & packages will only be installed from this Source if they do not exist in the offical sources. The priority is set arbitrarily to 232 so anything with a lower number will take priority.
 	    - If you want to install from this source specifically you can use the flag `--source ChocoGitHub` for example: `choco install explorerpatcher --source ChocoGitHub` to install specifically from this one.

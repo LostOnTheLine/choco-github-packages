@@ -36,11 +36,6 @@ jobs:
         }
       shell: pwsh
 
-    - name: Install NuGet CLI
-      run: |
-        choco install nuget.commandline -y
-      shell: pwsh
-
     - name: Create dist Directory
       run: |
         New-Item -ItemType Directory -Path ./dist -Force
@@ -60,35 +55,35 @@ jobs:
         if (-not (Test-Path ./dist/explorerpatcher.*.nupkg)) { throw "ExplorerPatcher package not created" }
       shell: pwsh
 
-    - name: Configure NuGet Credentials
+    - name: Publish to Repository Feed
       run: |
-        $nugetConfig = @"
-        <?xml version="1.0" encoding="utf-8"?>
-        <configuration>
-          <packageSources>
-            <clear />
-            <add key="GitHubPackages" value="https://nuget.pkg.github.com/LostOnTheLine/index.json" />
-          </packageSources>
-          <packageSourceCredentials>
-            <GitHubPackages>
-              <add key="Username" value="${{ github.actor }}" />
-              <add key="ClearTextPassword" value="${{ secrets.GITHUB_TOKEN }}" />
-            </GitHubPackages>
-          </packageSourceCredentials>
-        </configuration>
-        "@
-        Set-Content -Path ./NuGet.Config -Value $nugetConfig
-        Write-Output "NuGet.Config created:"
-        Get-Content ./NuGet.Config
-      shell: pwsh
-
-    - name: Publish to GitHub Packages
-      run: |
-        $nupkgs = Get-ChildItem -Path ./dist -Filter *.nupkg
-        if ($nupkgs.Count -eq 0) { throw "No .nupkg files found in dist/" }
+        New-Item -ItemType Directory -Path ./packages/feed -Force
+        Copy-Item -Path ./dist/*.nupkg -Destination ./packages/feed
+        $feed = '<?xml version="1.0" encoding="utf-8"?>
+        <feed xml:base="https://raw.githubusercontent.com/LostOnTheLine/choco-github-packages/main/packages/feed" xmlns="http://www.w3.org/2005/Atom">
+          <title>LostOnTheLine Chocolatey Packages</title>
+          <id>https://raw.githubusercontent.com/LostOnTheLine/choco-github-packages/main/packages/feed</id>
+          <updated>{0}</updated>
+          <link rel="self" href="https://raw.githubusercontent.com/LostOnTheLine/choco-github-packages/main/packages/feed" />
+          {1}
+        </feed>'
+        $entries = ""
+        $nupkgs = Get-ChildItem -Path ./packages/feed -Filter *.nupkg
         foreach ($nupkg in $nupkgs) {
-          nuget push $nupkg.FullName -Source GitHubPackages -ApiKey ${{ secrets.GITHUB_TOKEN }} -NonInteractive
+          $id = $nupkg.BaseName.Split('.')[0]
+          $version = $nupkg.BaseName -replace '^[^\.]*\.',''
+          $entries += "<entry>
+            <id>$id.$version</id>
+            <title>$id</title>
+            <updated>{0}</updated>
+            <content type=""application/zip"" src=""$($nupkg.Name)"" />
+          </entry>"
         }
+        $feed = [string]::Format($feed, (Get-Date -Format o), $entries)
+        Set-Content -Path ./packages/feed/Packages -Value $feed
+        git add packages/feed
+        git commit -m "Update feed with packages v${{ steps.version.outputs.version }}"
+        git push
       shell: pwsh
 
     - name: Commit Updated VERSION
