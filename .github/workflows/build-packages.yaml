@@ -36,6 +36,11 @@ jobs:
         }
       shell: pwsh
 
+    - name: Install NuGet CLI
+      run: |
+        choco install nuget.commandline -y
+      shell: pwsh
+
     - name: Create dist Directory
       run: |
         New-Item -ItemType Directory -Path ./dist -Force
@@ -57,7 +62,7 @@ jobs:
 
     - name: Configure NuGet Credentials
       run: |
-        choco source add -n=GitHubPackages -s="https://nuget.pkg.github.com/LostOnTheLine/index.json" -u="GITHUB_TOKEN" -p="${{ secrets.GITHUB_TOKEN }}"
+        nuget sources Add -Name GitHubPackages -Source https://nuget.pkg.github.com/LostOnTheLine/index.json -Username GITHUB_TOKEN -Password ${{ secrets.GITHUB_TOKEN }}
       shell: pwsh
 
     - name: Publish to GitHub Packages
@@ -65,7 +70,7 @@ jobs:
         $nupkgs = Get-ChildItem -Path ./dist -Filter *.nupkg
         if ($nupkgs.Count -eq 0) { throw "No .nupkg files found in dist/" }
         foreach ($nupkg in $nupkgs) {
-          choco push $nupkg.FullName --source https://nuget.pkg.github.com/LostOnTheLine/index.json
+          choco push $nupkg.FullName --source https://nuget.pkg.github.com/LostOnTheLine/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
         }
       shell: pwsh
 
