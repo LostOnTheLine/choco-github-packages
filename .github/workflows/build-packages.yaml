@@ -1,9 +1,9 @@
 name: Build Chocolatey Packages
 
 on:
- # push:
- #   branches:
- #     - main
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -78,7 +78,8 @@ jobs:
         </configuration>
         "@
         Set-Content -Path ./NuGet.Config -Value $nugetConfig
-        nuget sources Add -Name GitHubPackages -Source https://nuget.pkg.github.com/LostOnTheLine/index.json -Username "${{ github.actor }}" -Password "${{ secrets.GITHUB_TOKEN }}"
+        Write-Output "NuGet.Config created:"
+        Get-Content ./NuGet.Config
       shell: pwsh
 
     - name: Publish to GitHub Packages
@@ -86,7 +87,7 @@ jobs:
         $nupkgs = Get-ChildItem -Path ./dist -Filter *.nupkg
         if ($nupkgs.Count -eq 0) { throw "No .nupkg files found in dist/" }
         foreach ($nupkg in $nupkgs) {
-          choco push $nupkg.FullName --source https://nuget.pkg.github.com/LostOnTheLine/index.json --api-key "${{ secrets.GITHUB_TOKEN }}"
+          nuget push $nupkg.FullName -Source GitHubPackages -ApiKey ${{ secrets.GITHUB_TOKEN }} -NonInteractive
         }
       shell: pwsh
 
