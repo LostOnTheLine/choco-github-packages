@@ -1,9 +1,9 @@
 name: Build Chocolatey Packages
 
 on:
- # push:
- #   branches:
- #     - main
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -59,13 +59,14 @@ jobs:
       run: |
         New-Item -ItemType Directory -Path ./packages/feed -Force
         Copy-Item -Path ./dist/*.nupkg -Destination ./packages/feed
+        $timestamp = Get-Date -Format o
         $feed = '<?xml version="1.0" encoding="utf-8"?>
         <feed xml:base="https://raw.githubusercontent.com/LostOnTheLine/choco-github-packages/main/packages/feed" xmlns="http://www.w3.org/2005/Atom">
           <title>LostOnTheLine Chocolatey Packages</title>
           <id>https://raw.githubusercontent.com/LostOnTheLine/choco-github-packages/main/packages/feed</id>
-          <updated>{0}</updated>
+          <updated>' + $timestamp + '</updated>
           <link rel="self" href="https://raw.githubusercontent.com/LostOnTheLine/choco-github-packages/main/packages/feed" />
-          {1}
+          {0}
         </feed>'
         $entries = ""
         $nupkgs = Get-ChildItem -Path ./packages/feed -Filter *.nupkg
@@ -75,12 +76,14 @@ jobs:
           $entries += "<entry>
             <id>$id.$version</id>
             <title>$id</title>
-            <updated>{0}</updated>
+            <updated>$timestamp</updated>
             <content type=""application/zip"" src=""$($nupkg.Name)"" />
           </entry>"
         }
-        $feed = [string]::Format($feed, (Get-Date -Format o), $entries)
+        $feed = [string]::Format($feed, $entries)
         Set-Content -Path ./packages/feed/Packages -Value $feed
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
         git add packages/feed
         git commit -m "Update feed with packages v${{ steps.version.outputs.version }}"
         git push
